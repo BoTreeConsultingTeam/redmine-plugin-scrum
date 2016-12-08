@@ -1,0 +1,14 @@
+<div id="pending_effort" class="scrum-dialog" title="<%= l(:field_pending_effort) %>">
+  <table align="center">
+    <tr>
+      <th><%= l(:field_effective_date) %></th>
+      <th><%= l(:field_hours) %></th>
+    </tr>
+    <%- issue.pending_efforts.each do |pending_effort| -%>
+      <tr>
+        <td align="center"><%= format_date(pending_effort.date) %></td>
+        <td align="center"><%= pending_effort.effort %></td>
+      </tr>
+    <%- end -%>
+  </table>
+</div>

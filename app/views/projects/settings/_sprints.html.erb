@@ -1,0 +1,52 @@
+<%- if @project.sprints_and_product_backlogs.empty? -%>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<%- else -%>
+  <table class="list">
+    <thead>
+      <tr>
+        <th><%= l(:field_name) %></th>
+        <th><%= l(:field_start_date) %></th>
+        <th><%= l(:field_end_date) %></th>
+        <th><%= l(:field_status) %></th>
+        <th><%= l(:field_shared) %></th>
+        <th><%= l(:label_product_backlog) %></th>
+        <th><%= l(:label_pbi_plural) %></th>
+        <th><%= l(:label_task_plural) %></th>
+        <th style="width:15%"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for sprint in @project.sprints_and_product_backlogs %>
+        <tr class="version <%= cycle 'odd', 'even' %> <%= sprint.status %>">
+          <td><%= link_to(h(sprint.name), sprint.is_product_backlog? ? product_backlog_path(sprint) : sprint) %></td>
+          <td align="center"><%= format_date(sprint.sprint_start_date) %></td>
+          <td align="center"><%= format_date(sprint.sprint_end_date) %></td>
+          <td class="status"><%= l("label_sprint_status_#{sprint.status}") %></td>
+          <td align="center"><%= checked_image sprint.shared %></td>
+          <td align="center"><%= checked_image sprint.is_product_backlog? %></td>
+          <td align="center"><%= sprint.pbis.count %></td>
+          <td align="center"><%= sprint.tasks.count %></td>
+          <td class="buttons">
+            <%- if User.current.allowed_to?(:manage_sprints, @project) -%>
+              <%- unless checked_image sprint.is_product_backlog? -%>
+                <%= link_to l(:label_edit_effort), edit_effort_sprint_path(sprint),
+                            :class => 'icon icon-time-add' %>
+              <%- end -%>
+              <%= link_to l(:button_edit), edit_sprint_path(sprint),
+                          :class => 'icon icon-edit' %>
+              <%= delete_link sprint_path(sprint) %>
+            <%- end -%>
+          </td>
+        </tr>
+      <% end; reset_cycle %>
+    <tbody>
+  </table>
+<%- end -%>
+
+<p>
+  <%= link_to(l(:label_product_backlog_new),
+              new_project_sprint_path(@project, :back_url => '', :create_product_backlog => true),
+              :class => 'icon icon-add') if User.current.allowed_to?(:manage_sprints, @project) %>
+  <%= link_to(l(:label_sprint_new), new_project_sprint_path(@project, :back_url => ''),
+              :class => 'icon icon-add') if User.current.allowed_to?(:manage_sprints, @project) %>
+</p>

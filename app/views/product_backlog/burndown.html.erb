@@ -1,0 +1,21 @@
+<%= render :partial => 'common/scrum_backlog_menu' %>
+
+<h2><%= l(:label_product_backlog_burndown_chart) %></h2>
+
+<% content_for :header_tags do %>
+  <%= javascript_include_tag 'd3.min.js', :plugin => 'scrum' %>
+  <%= javascript_include_tag 'xcharts.min.js', :plugin => 'scrum' %>
+  <%= stylesheet_link_tag 'xcharts.min.css', :plugin => 'scrum' %>
+<% end %>
+
+<%= render :partial => 'burndown_head',
+           :locals => {:count => @sprints_count,
+                       :sps => @velocity,
+                       :default_sps => @default_velocity,
+                       :use_not_scheduled_pbis_for_velocity => @use_not_scheduled_pbis_for_velocity} %>
+
+<figure style="left-margin: auto; right-margin:auto; width: 90%; height: 500px;" id="burndown-chart" />
+
+<%= render :partial => 'product_backlog/burndown', :formats => [:js], :locals => {:data => @data} %>
+
+<%= render :partial => 'common/scrum_footer' %>

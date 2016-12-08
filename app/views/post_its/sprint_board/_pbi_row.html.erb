@@ -1,0 +1,33 @@
+<%- pbi_row_id = "pbi_#{pbi.id}_row" -%>
+<tr class="sprint-board" id="<%= pbi_row_id %>">
+  <td class="sprint-board">
+    <%= render :partial => 'post_its/sprint_board/pbi', :formats => [:html],
+               :locals => {:project => project, :pbi => pbi, :read_only => false} %>
+  </td>
+  <%- tasks = pbi.tasks_by_status_id
+      task_statuses.each do |status| -%>
+    <%- pbi_status_id = "pbi_#{pbi.id}_status_#{status.id}"
+        other_pbi_status_ids = task_statuses.select{|other| other != status}.collect{
+          |other| "pbi_#{pbi.id}_status_#{other.id}"
+        } -%>
+    <td id="<%= pbi_status_id %>" class="sprint-board">
+      <%- tasks[status.id].each do |task| -%>
+        <%= render :partial => 'post_its/sprint_board/task', :formats => [:html],
+                   :locals => {:project => project,
+                               :task => task,
+                               :pbi_status_id => pbi_status_id,
+                               :other_pbi_status_ids => other_pbi_status_ids,
+                               :read_only => false} %>
+      <%- end -%>
+    </td>
+    <%= render :partial => 'post_its/sprint_board/pbi_status', :formats => [:js],
+               :locals => {:project => project,
+                           :pbi_id => pbi.id,
+                           :pbi_status_id => pbi_status_id,
+                           :status => status} %>
+  <%- end -%>
+</tr>
+<%= render :partial => 'post_its/sprint_board/pbi_row', :formats => [:js],
+           :locals => {:project => project,
+                       :pbi => pbi,
+                       :pbi_row_id => pbi_row_id} %>

@@ -1,0 +1,19 @@
+<tr valign="top">
+  <td width="300px">
+    <div class="tabular">
+      <p>
+        <label><%= l(:label_product_backlog) %>:</label>
+        <%- options = project.product_backlogs.collect{ |other_product_backlog|
+              [other_product_backlog.name, path.call(other_product_backlog, :type => @type)]}
+            options = options_for_select(options, path.call(product_backlog, :type => @type)) -%>
+        <%= select_tag('selected_sprint_id', options,
+                       :onchange => "if (this.value != '') { window.location = this.value; }") %>
+      </p>
+    </div>
+  </td>
+  <%- unless product_backlog.description.blank? -%>
+    <td>
+      <%= textilizable(product_backlog.description) %>
+    </td>
+  <%- end -%>
+</tr>

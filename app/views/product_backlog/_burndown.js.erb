@@ -1,0 +1,48 @@
+<%= javascript_tag do %>
+	// Create the tooltip DOM element.
+	var toolTip = document.createElement("div"),
+		leftOffset = -(~~$("html").css("padding-left").replace("px", "") + ~~$("body").css("margin-left").replace("px", "")),
+		topOffset = -32;
+	toolTip.className = "graphic-tooltip";
+	document.body.appendChild(toolTip);
+	// Chart data.
+	var data = {
+		// Horizontal set of values (ordinal), vertical values (linear).
+		"xScale": "ordinal",
+		"yScale": "linear",
+		"main": [
+			{
+				// Sprint story points serie.
+				"className": ".story-points",
+				"data": [
+				<%- data.each_with_index do |value, i| -%>
+					{
+						"x": <%= i %>,
+						"y": <%= value[:pending_story_points] %>,
+						"axis_label": "<%= value[:axis_label] %>",
+						"tooltip": "<%= value[:story_points_tooltip] %>"
+					},
+				<%- end -%>
+				]
+			}
+		]
+	};
+	// Chart options.
+	var options = {
+		// Use data label as horizontal axis labels.
+		"tickFormatX": function (x) { return data["main"][0]["data"][x]["axis_label"]; },
+		// Render a tooltip when mouse goes over the values.
+		"mouseover": function (d, i) {
+			var pos = $(this).offset();
+			$(toolTip).text(d.tooltip)
+			.css({top: topOffset + pos.top, left: pos.left + leftOffset})
+			.show();
+		},
+		// Hide the tooltip when mouse exists the values.
+		"mouseout": function (x) {
+			$(toolTip).hide();
+		}
+	};
+	// Generate the chart.
+	new xChart("line-dotted", data, "#burndown-chart", options);
+<% end %>

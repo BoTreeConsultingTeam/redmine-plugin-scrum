@@ -1,0 +1,8 @@
+<div class="" style="float: right;">
+  <%= link_to(l(:label_plugin_license), "#", :id => "licenseLink", :class => "icon icon-copy") %>
+  <div id="licenseDialog">
+    <iframe id="licenseIframe" src="http://creativecommons.org/licenses/by-nd/4.0/"></iframe>
+  </div>
+</div>
+
+<%= render :partial => "license", :formats => [:js] %>

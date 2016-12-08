@@ -1,0 +1,34 @@
+<%- if @issue.scrum? -%>
+  <%= issue_fields_rows do |rows|
+    if @issue.sprint.nil?
+      content = ''
+    else
+      if @issue.sprint.is_product_backlog
+        object = project_product_backlog_index_path(@issue.sprint.project)
+      else
+        object = @issue.sprint
+      end
+      content = link_to(h(@issue.sprint.name), object)
+    end
+    rows.left l(:label_sprint), content, :class => 'sprint'
+
+    if @issue.is_pbi?
+      rows.right l(:field_position), @issue.position, :class => 'position'
+    elsif @issue.is_task?
+      content = ''
+      if @issue.pending_effort
+        content = raw(l('datetime.distance_in_words.x_hours', :count => @issue.pending_effort)) +
+                  raw('&nbsp;') +
+                  link_to('', '#', :class => 'icon icon-zoom-in',
+                          :onclick => '$("#pending_effort").dialog({modal: true});') +
+                  render(:partial => 'scrum_hooks/issues/pending_effort', :locals => {:issue => @issue})
+        if User.current.allowed_to?(:edit_issues, @issue.project)
+          content += link_to('', '#', :class => 'icon icon-edit',
+                             :onclick => '$("#edit_pending_effort").dialog({modal: true});') +
+                     render(:partial => 'scrum_hooks/issues/edit_pending_effort', :locals => {:issue => @issue})
+        end
+      end
+      rows.right l(:field_pending_effort), content, :class => 'pending_effort'
+    end
+  end %>
+<%- end -%>
