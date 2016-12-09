@@ -17,6 +17,7 @@ class Sprint < ActiveRecord::Base
   include Redmine::SafeAttributes
   safe_attributes :name, :description, :sprint_start_date, :sprint_end_date, :status, :shared
   attr_protected :id
+  after_create :set_product_backlog
 
   SPRINT_STATUSES = %w(open closed)
 
@@ -26,6 +27,56 @@ class Sprint < ActiveRecord::Base
   validates_presence_of :sprint_start_date, :unless => :is_product_backlog?
   validates_presence_of :sprint_end_date, :unless => :is_product_backlog?
   validates_inclusion_of :status, :in => SPRINT_STATUSES
+
+  def set_product_backlog
+    params = { 'issue' => { 'tracker_id' => Tracker.find_by_name('Product Backlog').id,
+                                  'sprint_id' => self.id,
+                                  'subject' => "#{self.name} pbi",
+                                  'status_id' => IssueStatus.find_by_name('In Progress').id,
+                                  'priority_id' => Enumeration.find_by_name('Normal').id,
+                                  'assigned_to_id' => '',
+                                  'start_date' => self.sprint_start_date,
+                                  'due_date' => self.sprint_end_date,
+                                  'estimated_hours' => '',
+                                  'done_ratio' => '0',
+                                  'custom_field_values' => { CustomField.find_by_name('Story Points').id}.to_s => CustomField.find_by_name('Story Points').default_value}.to_s },
+                                  'description' => ''
+                                } 
+                    }
+      begin
+        continue = !(params[:create_and_continue].nil?)
+        top = !(params[:top].nil?)
+        pbi = Issue.new
+        pbi.project = self.project
+        pbi.author = User.current
+        pbi.tracker_id = params['issue']['tracker_id']
+        update_attributes(pbi, params)
+        if top
+          pbi.set_on_top
+          pbi.save!
+        end
+        pbi.sprint = self
+        pbi.save!
+      rescue Exception => e
+        logger.error("Exception: #{e.inspect}")
+      end
+  end
+
+  def update_pbi_attributes(issue, params)
+    issue.status_id = params[:issue][:status_id] unless params[:issue][:status_id].nil?
+    raise 'New status is not allowed' unless issue.new_statuses_allowed_to.include?(issue.status)
+    issue.assigned_to_id = params[:issue][:assigned_to_id] unless params[:issue][:assigned_to_id].nil?
+    issue.subject = params[:issue][:subject] unless params[:issue][:subject].nil?
+    issue.priority_id = params[:issue][:priority_id] unless params[:issue][:priority_id].nil?
+    issue.estimated_hours = params[:issue][:estimated_hours].gsub(',', '.') unless params[:issue][:estimated_hours].nil?
+    issue.done_ratio = params[:issue][:done_ratio] unless params[:issue][:done_ratio].nil?
+    issue.description = params[:issue][:description] unless params[:issue][:description].nil?
+    issue.category_id = params[:issue][:category_id] if issue.safe_attribute?(:category_id) and (!(params[:issue][:category_id].nil?))
+    issue.fixed_version_id = params[:issue][:fixed_version_id] if issue.safe_attribute?(:fixed_version_id) and (!(params[:issue][:fixed_version_id].nil?))
+    issue.start_date = params[:issue][:start_date] if issue.safe_attribute?(:start_date) and (!(params[:issue][:start_date].nil?))
+    issue.due_date = params[:issue][:due_date] if issue.safe_attribute?(:due_date) and (!(params[:issue][:due_date].nil?))
+    issue.custom_field_values = params[:issue][:custom_field_values] unless params[:issue][:custom_field_values].nil?
+  end
 
   def to_s
     name

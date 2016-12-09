@@ -101,7 +101,23 @@ class ScrumController < ApplicationController
   end
 
   def create_pbi
-   create_pbi_auto(params)
+    begin
+      continue = !(params[:create_and_continue].nil?)
+      top = !(params[:top].nil?)
+      pbi = Issue.new
+      pbi.project = @sprint.project
+      pbi.author = User.current
+      pbi.tracker_id = params['issue']['tracker_id']
+      @sprint.update_pbi_attributes(pbi, params)
+      if top
+        pbi.set_on_top
+        pbi.save!
+      end
+      pbi.sprint = @sprint
+      pbi.save!
+    rescue Exception => e
+      logger.error("Exception: #{e.inspect}")
+    end
     respond_to do |format|
       format.js
     end
@@ -116,7 +132,7 @@ class ScrumController < ApplicationController
   def update_pbi
     begin
       @pbi.init_journal(User.current, params[:issue][:notes])
-      update_attributes(@pbi, params)
+      @sprint.update_pbi_attributes(@pbi, params)
       @pbi.save!
     rescue Exception => @exception
       logger.error("Exception: #{@exception.inspect}")
@@ -199,7 +215,7 @@ class ScrumController < ApplicationController
       @task.author = User.current
       @task.sprint = @sprint
       @task.tracker_id = params[:issue][:tracker_id]
-      update_attributes(@task, params)
+      @sprint.update_pbi_attributes(@task, params)
       @task.save!
       @task.pending_effort = params[:issue][:pending_effort]
     rescue Exception => @exception
@@ -219,7 +235,7 @@ class ScrumController < ApplicationController
     begin
       @issue.init_journal(User.current, params[:issue][:notes])
       @old_status = @issue.status
-      update_attributes(@issue, params)
+      @sprint.update_pbi_attributes(@issue, params)
       @issue.save!
       @issue.pending_effort = params[:issue][:pending_effort]
     rescue Exception => @exception
@@ -293,22 +309,6 @@ private
 
   def authorize_edit_issues
     authorize_action_on_current_project(:edit_issues)
-  end
-
-  def update_attributes(issue, params)
-    issue.status_id = params[:issue][:status_id] unless params[:issue][:status_id].nil?
-    raise 'New status is not allowed' unless issue.new_statuses_allowed_to.include?(issue.status)
-    issue.assigned_to_id = params[:issue][:assigned_to_id] unless params[:issue][:assigned_to_id].nil?
-    issue.subject = params[:issue][:subject] unless params[:issue][:subject].nil?
-    issue.priority_id = params[:issue][:priority_id] unless params[:issue][:priority_id].nil?
-    issue.estimated_hours = params[:issue][:estimated_hours].gsub(',', '.') unless params[:issue][:estimated_hours].nil?
-    issue.done_ratio = params[:issue][:done_ratio] unless params[:issue][:done_ratio].nil?
-    issue.description = params[:issue][:description] unless params[:issue][:description].nil?
-    issue.category_id = params[:issue][:category_id] if issue.safe_attribute?(:category_id) and (!(params[:issue][:category_id].nil?))
-    issue.fixed_version_id = params[:issue][:fixed_version_id] if issue.safe_attribute?(:fixed_version_id) and (!(params[:issue][:fixed_version_id].nil?))
-    issue.start_date = params[:issue][:start_date] if issue.safe_attribute?(:start_date) and (!(params[:issue][:start_date].nil?))
-    issue.due_date = params[:issue][:due_date] if issue.safe_attribute?(:due_date) and (!(params[:issue][:due_date].nil?))
-    issue.custom_field_values = params[:issue][:custom_field_values] unless params[:issue][:custom_field_values].nil?
   end
 
   def move_issue_to_sprint(issue, sprint)
