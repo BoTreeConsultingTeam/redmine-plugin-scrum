@@ -101,23 +101,7 @@ class ScrumController < ApplicationController
   end
 
   def create_pbi
-    begin
-      @continue = !(params[:create_and_continue].nil?)
-      @top = !(params[:top].nil?)
-      @pbi = Issue.new
-      @pbi.project = @project
-      @pbi.author = User.current
-      @pbi.tracker_id = params[:issue][:tracker_id]
-      update_attributes(@pbi, params)
-      if @top
-        @pbi.set_on_top
-        @pbi.save!
-      end
-      @pbi.sprint = @sprint
-      @pbi.save!
-    rescue Exception => @exception
-      logger.error("Exception: #{@exception.inspect}")
-    end
+   create_pbi_auto(params)
     respond_to do |format|
       format.js
     end
