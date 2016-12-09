@@ -59,7 +59,18 @@ class SprintsController < ApplicationController
         raise 'Fail to update project with product backlog' unless @project.save!
       end
       flash[:notice] = l(:notice_successful_create)
-      pbi_params = {"issue"=>{"tracker_id"=> Tracker.find_by_name('Product Backlog').id, "sprint_id"=> @sprint.id, "subject"=>"#{@sprint.name} pbi", "status_id"=> IssueStatus.find_by_name('In Progress').id , "priority_id"=> Enumeration.find_by_name('Normal').id, "assigned_to_id"=>"", "start_date"=>@sprint.sprint_start_date, "due_date"=>@sprint.sprint_end_date, "estimated_hours"=>"", "done_ratio"=>"0", "custom_field_values"=>{ "#{CustomField.find_by_name('Story Points').id}"=>"#{CustomField.find_by_name('Story Points').default_value}"}, "description"=>""}}
+      pbi_params = {"issue"=>{"tracker_id"=> Tracker.find_by_name('Product Backlog').id, 
+                              "sprint_id"=> @sprint.id, 
+                              "subject"=>"#{@sprint.name} pbi", 
+                              "status_id"=> IssueStatus.find_by_name('In Progress').id , 
+                              "priority_id"=> Enumeration.find_by_name('Normal').id, 
+                              "assigned_to_id"=>"", "start_date"=>@sprint.sprint_start_date, 
+                              "due_date"=>@sprint.sprint_end_date, 
+                              "estimated_hours"=>"", "done_ratio"=>"0", 
+                              "custom_field_values"=>{ "#{CustomField.find_by_name('Story Points').id}"=>"#{CustomField.find_by_name('Story Points').default_value}"},
+                               "description"=>""
+                             }
+                    }
       create_pbi_auto(pbi_params)
       redirect_back_or_default settings_project_path(@project, :tab => 'sprints')
     else
