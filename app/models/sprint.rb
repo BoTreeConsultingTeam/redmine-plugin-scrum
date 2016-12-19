@@ -39,7 +39,7 @@ class Sprint < ActiveRecord::Base
                                   'due_date' => self.sprint_end_date,
                                   'estimated_hours' => '',
                                   'done_ratio' => '0',
-                                  'custom_field_values' => { CustomField.find_by_name('Story Points').id}.to_s => CustomField.find_by_name('Story Points').default_value}.to_s },
+                                  'custom_field_values' => { CustomField.find_by_name('Story Points').id.to_s => CustomField.find_by_name('Story Points').default_value.to_s },
                                   'description' => ''
                                 } 
                     }
@@ -63,19 +63,19 @@ class Sprint < ActiveRecord::Base
   end
 
   def update_pbi_attributes(issue, params)
-    issue.status_id = params[:issue][:status_id] unless params[:issue][:status_id].nil?
+    iissue.status_id = params['issue']['status_id'] unless params['issue']['status_id'].nil?
     raise 'New status is not allowed' unless issue.new_statuses_allowed_to.include?(issue.status)
-    issue.assigned_to_id = params[:issue][:assigned_to_id] unless params[:issue][:assigned_to_id].nil?
-    issue.subject = params[:issue][:subject] unless params[:issue][:subject].nil?
-    issue.priority_id = params[:issue][:priority_id] unless params[:issue][:priority_id].nil?
-    issue.estimated_hours = params[:issue][:estimated_hours].gsub(',', '.') unless params[:issue][:estimated_hours].nil?
-    issue.done_ratio = params[:issue][:done_ratio] unless params[:issue][:done_ratio].nil?
-    issue.description = params[:issue][:description] unless params[:issue][:description].nil?
-    issue.category_id = params[:issue][:category_id] if issue.safe_attribute?(:category_id) and (!(params[:issue][:category_id].nil?))
-    issue.fixed_version_id = params[:issue][:fixed_version_id] if issue.safe_attribute?(:fixed_version_id) and (!(params[:issue][:fixed_version_id].nil?))
-    issue.start_date = params[:issue][:start_date] if issue.safe_attribute?(:start_date) and (!(params[:issue][:start_date].nil?))
-    issue.due_date = params[:issue][:due_date] if issue.safe_attribute?(:due_date) and (!(params[:issue][:due_date].nil?))
-    issue.custom_field_values = params[:issue][:custom_field_values] unless params[:issue][:custom_field_values].nil?
+    issue.assigned_to_id = params['issue']['assigned_to_id'] unless params['issue']['assigned_to_id'].nil?
+    issue.subject = params['issue']['subject'] unless params['issue']['subject'].nil?
+    issue.priority_id = params['issue']['priority_id'] unless params['issue']['priority_id'].nil?
+    issue.estimated_hours = params['issue']['estimated_hours'].gsub(',', '.') unless params['issue']['estimated_hours'].nil?
+    issue.done_ratio = params['issue']['done_ratio'] unless params['issue']['done_ratio'].nil?
+    issue.description = params['issue']['description'] unless params['issue']['description'].nil?
+    issue.category_id = params['issue']['category_id'] if issue.safe_attribute?('category_id') and (!(params['issue']['category_id'].nil?))
+    issue.fixed_version_id = params['issue']['fixed_version_id'] if issue.safe_attribute?('fixed_version_id') and (!(params['issue']['fixed_version_id'].nil?))
+    issue.start_date = params['issue']['start_date'] if issue.safe_attribute?('start_date') and (!(params['issue']['start_date'].nil?))
+    issue.due_date = params['issue']['due_date'] if issue.safe_attribute?('due_date') and (!(params['issue']['due_date'].nil?))
+    issue.custom_field_values = params['issue']['custom_field_values'] unless params['issue']['custom_field_values'].nil?
   end
 
   def to_s
