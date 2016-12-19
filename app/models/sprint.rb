@@ -50,7 +50,7 @@ class Sprint < ActiveRecord::Base
         pbi.project = self.project
         pbi.author = User.current
         pbi.tracker_id = params['issue']['tracker_id']
-        update_attributes(pbi, params)
+        update_pbi_attributes(pbi, params)
         if top
           pbi.set_on_top
           pbi.save!
